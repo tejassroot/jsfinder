@@ -171,13 +171,13 @@ jsfinder -u https://example.com/
 # Automatically creates and saves to: jsresult/example.com/
 ```
 
-Each domain directory contains:
-* `results.json` — Complete scan metadata, timestamps, and full discovery records
-* `endpoints.csv` — Discovered API & relative routes with source provenance and parameters
+Each domain directory contains clean, deduplicated, single-column CSV files (ideal for scripting and pipelines) while preserving full metadata in `results.json`:
+* `results.json` — Complete scan metadata, timestamps, headers, IPs, and provenance
+* `endpoints.csv` — Clean list of all discovered endpoint and API URLs
 * `resources.csv` — Clean list of all discovered JavaScript (`.js`) file URLs
-* `subdomains.csv` — Discovered and probed subdomains with IP addresses and status
-* `hosts.csv` — Probed live hosts with response status, page titles, and server headers
-* `source_maps.csv` — Discovered source maps and probe status codes
+* `subdomains.csv` — Clean list of all discovered subdomains
+* `hosts.csv` — Clean list of all probed live host URLs
+* `source_maps.csv` — Clean list of all discovered source map URLs
 * `urls.txt` — Clean deduplicated list of all discovered URLs (one per line, ready for piping)
 * `sourcemaps/` — Downloaded `.map` files (when `--download-sourcemaps` is enabled)
 

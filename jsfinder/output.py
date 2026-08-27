@@ -195,18 +195,19 @@ class OutputManager:
             print(f"{GREEN}[✓] JSON results written to:{RESET} {path}")
 
     def export_endpoints_csv(self, path: str) -> None:
-        """Export discovered endpoints and provenance to CSV."""
+        """Export discovered endpoints (clean unique URLs) to CSV."""
         with open(path, "w", encoding="utf-8", newline="") as f:
             writer = csv.writer(f)
-            writer.writerow(["Endpoint", "Type", "Source", "Parameters"])
-            for ep in self.results.endpoints:
-                writer.writerow([ep.endpoint, ep.endpoint_type, ep.source, ";".join(ep.parameters)])
+            writer.writerow(["URL"])
+            unique_endpoints = sorted({ep.endpoint for ep in self.results.endpoints if ep.endpoint})
+            for ep in unique_endpoints:
+                writer.writerow([ep])
         if not self.quiet:
             print(f"{GREEN}[✓] Endpoints CSV written to:{RESET} {path}")
 
     def export_directory_csvs(self, directory: str) -> None:
-        """Write individual CSVs for each entity inside output directory."""
-        # endpoints.csv
+        """Write individual clean CSVs for each entity inside output directory."""
+        # endpoints.csv (only unique endpoint URLs)
         ep_path = os.path.join(directory, "endpoints.csv")
         self.export_endpoints_csv(ep_path)
 
@@ -227,33 +228,36 @@ class OutputManager:
         if not self.quiet:
             print(f"{GREEN}[✓] Resources CSV (JavaScript URLs) written to:{RESET} {res_path}")
 
-        # hosts.csv
+        # hosts.csv (only unique live host URLs)
         host_path = os.path.join(directory, "hosts.csv")
         with open(host_path, "w", encoding="utf-8", newline="") as f:
             writer = csv.writer(f)
-            writer.writerow(["URL", "Status", "Final_URL", "Content_Type", "Content_Length", "Response_Time", "Server", "Title"])
-            for h in self.results.hosts:
-                writer.writerow([h.url, h.status, h.final_url, h.content_type, h.content_length, h.response_time, h.server or "", h.title or ""])
+            writer.writerow(["URL"])
+            unique_hosts = sorted({h.url for h in self.results.hosts if h.url})
+            for h in unique_hosts:
+                writer.writerow([h])
         if not self.quiet:
             print(f"{GREEN}[✓] Hosts CSV written to:{RESET} {host_path}")
 
-        # subdomains.csv
+        # subdomains.csv (only unique subdomains)
         sub_path = os.path.join(directory, "subdomains.csv")
         with open(sub_path, "w", encoding="utf-8", newline="") as f:
             writer = csv.writer(f)
-            writer.writerow(["Hostname", "IPs", "Is_Live", "Source"])
-            for s in self.results.subdomains:
-                writer.writerow([s.hostname, ";".join(s.ips), s.is_live, s.source])
+            writer.writerow(["Subdomain"])
+            unique_subs = sorted({s.hostname for s in self.results.subdomains if s.hostname})
+            for s in unique_subs:
+                writer.writerow([s])
         if not self.quiet:
             print(f"{GREEN}[✓] Subdomains CSV written to:{RESET} {sub_path}")
 
-        # source_maps.csv
+        # source_maps.csv (only unique source map URLs)
         sm_path = os.path.join(directory, "source_maps.csv")
         with open(sm_path, "w", encoding="utf-8", newline="") as f:
             writer = csv.writer(f)
-            writer.writerow(["URL", "Referenced_JS", "Status", "Size", "Content_Type", "Detected_Via"])
-            for sm in self.results.source_maps:
-                writer.writerow([sm.url, sm.referenced_js, sm.status or "", sm.size or "", sm.content_type or "", sm.detected_via])
+            writer.writerow(["URL"])
+            unique_sms = sorted({sm.url for sm in self.results.source_maps if sm.url})
+            for sm in unique_sms:
+                writer.writerow([sm])
         if not self.quiet:
             print(f"{GREEN}[✓] Source Maps CSV written to:{RESET} {sm_path}")
 
