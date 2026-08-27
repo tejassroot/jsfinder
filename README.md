@@ -13,6 +13,7 @@
 - **Deep JavaScript Static Analysis**: Extracts absolute URLs, relative paths, API routes (`/api/...`, `/v1/...`, `/graphql`), URL query parameters, referenced subdomains, and source map directives (`sourceMappingURL=`), tracking full provenance for each finding.
 - **Source Map Detection**: Identifies source maps via directives and conventional `.map` probes, safely checking status and size without exposing raw source code in the terminal unless requested (`--download-sourcemaps`).
 - **Per-Host Token Bucket Rate Limiter**: Independent rate limiter buckets per hostname (e.g. `example.com`, `api.example.com`, `cdn.example.com`), respecting `Retry-After`, handling HTTP `429` responses with bounded exponential backoff, and enforcing global concurrency limits.
+- **Automatic Multi-Target Directory Output**: Automatically creates `jsresult/<domain>/` containing full structured JSON and individual CSV reports (`endpoints.csv`, `resources.csv`, `hosts.csv`, `subdomains.csv`, `source_maps.csv`). Different target domains are organized neatly side-by-side in the same `jsresult/` parent directory.
 - **Comprehensive Output Formats**: Supports structured JSON, tabular CSV, dedicated multi-file directory reports (`--output-dir`), and formatted terminal dashboards.
 
 ---
@@ -89,6 +90,8 @@ jsfinder -u https://example.com
 # or
 python jsfinder.py -u https://example.com
 ```
+
+> **Automatic File Saving**: Scan results are automatically saved into `jsresult/<domain>/` containing `results.json`, `endpoints.csv`, `resources.csv`, `subdomains.csv`, `hosts.csv`, and `source_maps.csv`. Scanning multiple domains organizes them neatly side-by-side inside the same `jsresult/` parent directory!
 
 ### Passive & Active Subdomain Enumeration
 
