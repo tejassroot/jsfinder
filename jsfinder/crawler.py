@@ -88,11 +88,37 @@ class Crawler:
         if self.progress_callback:
             self.progress_callback(msg)
 
+    def _register_host_subdomain(self, url_or_host: str, source: str) -> None:
+        """Track newly discovered in-scope subdomains."""
+        if not url_or_host:
+            return
+        if "://" in url_or_host or url_or_host.startswith("//"):
+            try:
+                host = urlsplit(url_or_host if "://" in url_or_host else "http:" + url_or_host).hostname
+            except Exception:
+                host = None
+        else:
+            host = url_or_host.split("/")[0].split(":")[0]
+
+        if not host:
+            return
+        host = host.lower().strip(".")
+        if host not in self.discovered_subdomains_map and self.scope_manager.is_in_scope(host):
+            self.discovered_subdomains_map[host] = SubdomainFinding(
+                hostname=host,
+                source=source,
+                ips=[],
+                is_live=True,
+            )
+
     async def run(self) -> ScanResults:
         """Execute the full discovery and analysis workflow."""
         start_time = datetime.now(timezone.utc).isoformat()
         self._log(f"Starting JSFinder scan on target: {self.target}")
         self._log(f"Active scope: {', '.join(self.scope_manager.get_rules())}")
+
+        # Always register target host
+        self._register_host_subdomain(self.target_host, "target")
 
         # 1. Subdomain Discovery
         if self.enable_subdomains or self.enable_active_subdomains:
@@ -168,6 +194,7 @@ class Crawler:
                 for res in resources:
                     if res.url not in self.discovered_resources_map:
                         self.discovered_resources_map[res.url] = res
+                    self._register_host_subdomain(res.url, "resource_discovery")
                     # If it's a JavaScript file and in-scope, queue it for JS analysis
                     if res.resource_type == "javascript" and self.scope_manager.is_in_scope(res.url):
                         if res.url not in self.visited_js_urls:
@@ -191,6 +218,7 @@ class Crawler:
                             and crawl_queue.qsize() < self.max_pages
                         ):
                             self.visited_urls.add(norm_link)
+                            self._register_host_subdomain(norm_link, "html_crawl")
                             await crawl_queue.put((norm_link, depth + 1))
 
         # 3. JavaScript Analysis

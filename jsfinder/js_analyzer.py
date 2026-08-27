@@ -27,6 +27,8 @@ ABSOLUTE_URL_REGEX = re.compile(
 STANDARD_URI_SCHEMAS = (
     "http://www.w3.org/",
     "https://www.w3.org/",
+    "http://schema.org",
+    "https://schema.org",
     "http://schemas.xmlsoap.org/",
     "https://schemas.xmlsoap.org/",
     "http://schemas.microsoft.com/",
@@ -47,9 +49,9 @@ ROUTE_DECLARATION_PATTERNS = [
     re.compile(r"""\b(?:router|app)\.(?:get|post|put|delete|patch|use)\s*\(\s*['"`](/[^'"`\s]+)['"`]"""),
 ]
 
-# Quoted string candidates for relative paths
+# Quoted string candidates for relative paths (excluding quotes, semicolons, and code brackets)
 QUOTED_PATH_CANDIDATE = re.compile(
-    r"""(?:['"`])(/[-a-zA-Z0-9_.~!$&'()*+,;=:@%/?#]+)(?:['"`])"""
+    r"""(?:["'`])(/[-a-zA-Z0-9_.~!$&+,:=@%/?#]+)(?:["'`])"""
 )
 
 # MIME types or common JS idioms that start with '/' but aren't endpoints
@@ -262,21 +264,23 @@ class JavaScriptAnalyzer:
         seen_params: Set[str],
     ) -> None:
         """Filter and classify a potential relative endpoint path."""
-        # Basic cleanliness
+        # Strip trailing punctuation and quotes
+        path = path.rstrip(")]};,'\"")
         if not path or path in FALSE_POSITIVE_EXACT:
             return
 
-        # Strip trailing punctuation
-        path = path.rstrip(")]};,'\"")
-
         lower_path = path.lower()
+
+        # Reject regex literal flags (e.g. /g, /gi, /gim)
+        if re.match(r"^/[gimsuyv]+$", lower_path):
+            return
 
         # Reject common false positive MIME types and HTML tag fragments
         if any(lower_path.startswith(fp) for fp in FALSE_POSITIVE_PREFIXES):
             return
 
-        # Reject paths with spaces or newlines or backslashes
-        if any(c in path for c in (" ", "\n", "\r", "\t", "\\", "<", ">", "{", "}")):
+        # Reject paths with code syntax characters, spaces, newlines, or backslashes
+        if any(c in path for c in (" ", "\n", "\r", "\t", "\\", "<", ">", "{", "}", ";", "(", ")", "'", '"', "[", "]")):
             return
 
         # Reject SVG paths (e.g. /M12 2C... or /M0 0h24...)

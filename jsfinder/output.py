@@ -77,14 +77,17 @@ def print_terminal_results(results: ScanResults) -> None:
 
     # 4. Source Maps
     if results.source_maps:
-        print(f"{BOLD}[+] Source Maps ({len(results.source_maps)}):{RESET}")
-        for sm in results.source_maps:
-            status_str = f"status: {sm.status}" if sm.status is not None else "unprobed"
-            size_str = f", size: {sm.size} bytes" if sm.size is not None else ""
-            status_col = GREEN if sm.status == 200 else (YELLOW if sm.status else DIM)
-            print(f"  • {sm.url}")
-            print(f"      Referenced JS: {DIM}{sm.referenced_js}{RESET}")
-            print(f"      {status_col}[{status_str}{size_str}, detected via {sm.detected_via}]{RESET}")
+        active_maps = [sm for sm in results.source_maps if sm.status == 200]
+        other_maps = [sm for sm in results.source_maps if sm.status != 200]
+        if active_maps:
+            print(f"{BOLD}[+] Source Maps ({len(active_maps)} active, {len(other_maps)} inactive):{RESET}")
+            for sm in active_maps:
+                size_str = f", size: {sm.size} bytes" if sm.size is not None else ""
+                print(f"  • {GREEN}{sm.url}{RESET}")
+                print(f"      Referenced JS: {DIM}{sm.referenced_js}{RESET}")
+                print(f"      {GREEN}[ACTIVE 200{size_str}, detected via {sm.detected_via}]{RESET}")
+        else:
+            print(f"{BOLD}[+] Source Maps:{RESET} {DIM}0 active found ({len(results.source_maps)} convention probes returned 404/inactive){RESET}")
         print()
 
     # 5. Endpoints
