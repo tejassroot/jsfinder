@@ -38,26 +38,42 @@ jsfinder/
 
 ---
 
-## Installation
+## Installation & Quick Start
 
 ### Prerequisites
 
 - Python 3.11 or higher
 - `pip` package manager
+- `git`
 
-### Setup
-
-Clone or copy the repository and install dependencies:
+### 1. Clone the Repository
 
 ```bash
+git clone https://github.com/tejassroot/jsfinder.git
 cd jsfinder
 pip install -r requirements.txt
 ```
 
-Verify the installation:
+### 2. Install Globally to `/usr/local/bin` (Recommended)
+
+Link `jsfinder` directly to `/usr/local/bin` so it can be executed from any terminal directory:
 
 ```bash
-python jsfinder.py --help
+chmod +x jsfinder.py
+sudo ln -sf "$(pwd)/jsfinder.py" /usr/local/bin/jsfinder
+```
+
+*Alternatively, install via pip:*
+
+```bash
+pip install .
+```
+
+### 3. Verify Installation
+
+```bash
+jsfinder --help
+# or: python jsfinder.py --help
 ```
 
 ---
@@ -66,9 +82,11 @@ python jsfinder.py --help
 
 ### Core Command
 
-Scan a single target URL or domain:
+Scan a single target URL or domain (using either the global `jsfinder` command or `python jsfinder.py`):
 
 ```bash
+jsfinder -u https://example.com
+# or
 python jsfinder.py -u https://example.com
 ```
 
