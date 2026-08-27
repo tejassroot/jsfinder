@@ -142,6 +142,9 @@ class OutputManager:
 
     def save_all(self) -> None:
         """Save results according to configured options."""
+        if not self.output_dir and not self.json_file and not self.csv_file:
+            print(f"{DIM}[*] Tip: No output file specified. To save findings, pass --output-dir ./results, -o results.json, or --csv endpoints.csv{RESET}\n")
+            return
         # 1. Output directory export
         if self.output_dir:
             os.makedirs(self.output_dir, exist_ok=True)
