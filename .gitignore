@@ -47,6 +47,7 @@ env.bak/
 venv.bak/
 
 # Scanner outputs and test data
+jsresult/
 results/
 audit_results/
 sourcemaps/
