@@ -90,20 +90,15 @@ def print_terminal_results(results: ScanResults) -> None:
             print(f"{BOLD}[+] Source Maps:{RESET} {DIM}0 active found ({len(results.source_maps)} convention probes returned 404/inactive){RESET}")
         print()
 
-    # 5. Endpoints
+    # 5. Discovered URLs & Endpoints
     if results.endpoints:
-        print(f"{BOLD}[+] Discovered Endpoints ({len(results.endpoints)}):{RESET}")
-        # Group by source JS
-        by_source: dict[str, list] = {}
-        for ep in results.endpoints:
-            by_source.setdefault(ep.source, []).append(ep)
-
-        for src, eps in by_source.items():
-            print(f"  {BOLD}Source:{RESET} {CYAN}{src}{RESET}")
-            for ep in eps:
-                ep_type_color = YELLOW if ep.endpoint_type == "api" else GREEN
-                param_str = f" (params: {', '.join(ep.parameters)})" if ep.parameters else ""
-                print(f"    - {ep_type_color}[{ep.endpoint_type.upper()}]{RESET} {ep.endpoint}{param_str}")
+        unique_eps = sorted({ep.endpoint for ep in results.endpoints if ep.endpoint})
+        print(f"{BOLD}[+] Discovered URLs & Endpoints ({len(unique_eps)} unique):{RESET}")
+        for ep_url in unique_eps:
+            is_api = any(ep.endpoint == ep_url and ep.endpoint_type == "api" for ep in results.endpoints)
+            col = YELLOW if is_api else GREEN
+            tag = f"{col}[API]{RESET} " if is_api else ""
+            print(f"  • {tag}{ep_url}")
         print()
 
     # 6. Parameters
@@ -134,25 +129,30 @@ class OutputManager:
         json_file: Optional[str] = None,
         csv_file: Optional[str] = None,
         output_dir: Optional[str] = None,
+        quiet: bool = False,
     ):
         self.results = results
         self.json_file = json_file
         self.csv_file = csv_file
         self.output_dir = output_dir
+        self.quiet = quiet
 
     def save_all(self) -> None:
         """Save results according to configured options."""
         if not self.output_dir and not self.json_file and not self.csv_file:
-            print(f"{DIM}[*] Tip: No output file specified. To save findings, pass --output-dir ./results, -o results.json, or --csv endpoints.csv{RESET}\n")
+            if not self.quiet:
+                print(f"{DIM}[*] Tip: No output file specified. To save findings, pass --output-dir ./results, -o results.json, or --csv endpoints.csv{RESET}\n")
             return
         # 1. Output directory export
         if self.output_dir:
             os.makedirs(self.output_dir, exist_ok=True)
-            print(f"\n{BOLD}[*] Saving scan artifacts to directory:{RESET} {self.output_dir}/")
+            if not self.quiet:
+                print(f"\n{BOLD}[*] Saving scan artifacts to directory:{RESET} {self.output_dir}/")
             default_json_path = os.path.join(self.output_dir, "results.json")
             self.export_json(default_json_path)
             self.export_directory_csvs(self.output_dir)
-            print(f"{BOLD}{GREEN}[✓] All findings organized in:{RESET} {self.output_dir}/\n")
+            if not self.quiet:
+                print(f"{BOLD}{GREEN}[✓] All findings organized in:{RESET} {self.output_dir}/\n")
 
         # 2. Explicit JSON export
         if self.json_file and (not self.output_dir or os.path.abspath(self.json_file) != os.path.abspath(os.path.join(self.output_dir, "results.json"))):
@@ -173,7 +173,8 @@ class OutputManager:
         data = self.results.to_dict()
         with open(path, "w", encoding="utf-8") as f:
             json.dump(data, f, indent=2)
-        print(f"{GREEN}[✓] JSON results written to:{RESET} {path}")
+        if not self.quiet:
+            print(f"{GREEN}[✓] JSON results written to:{RESET} {path}")
 
     def export_endpoints_csv(self, path: str) -> None:
         """Export discovered endpoints and provenance to CSV."""
@@ -182,7 +183,8 @@ class OutputManager:
             writer.writerow(["Endpoint", "Type", "Source", "Parameters"])
             for ep in self.results.endpoints:
                 writer.writerow([ep.endpoint, ep.endpoint_type, ep.source, ";".join(ep.parameters)])
-        print(f"{GREEN}[✓] Endpoints CSV written to:{RESET} {path}")
+        if not self.quiet:
+            print(f"{GREEN}[✓] Endpoints CSV written to:{RESET} {path}")
 
     def export_directory_csvs(self, directory: str) -> None:
         """Write individual CSVs for each entity inside output directory."""
@@ -197,7 +199,8 @@ class OutputManager:
             writer.writerow(["URL", "Type", "Source_URL", "Tag", "Framework_Chunk"])
             for r in self.results.resources:
                 writer.writerow([r.url, r.resource_type, r.source_url, r.tag or "", r.framework_chunk])
-        print(f"{GREEN}[✓] Resources CSV written to:{RESET} {res_path}")
+        if not self.quiet:
+            print(f"{GREEN}[✓] Resources CSV written to:{RESET} {res_path}")
 
         # hosts.csv
         host_path = os.path.join(directory, "hosts.csv")
@@ -206,7 +209,8 @@ class OutputManager:
             writer.writerow(["URL", "Status", "Final_URL", "Content_Type", "Content_Length", "Response_Time", "Server", "Title"])
             for h in self.results.hosts:
                 writer.writerow([h.url, h.status, h.final_url, h.content_type, h.content_length, h.response_time, h.server or "", h.title or ""])
-        print(f"{GREEN}[✓] Hosts CSV written to:{RESET} {host_path}")
+        if not self.quiet:
+            print(f"{GREEN}[✓] Hosts CSV written to:{RESET} {host_path}")
 
         # subdomains.csv
         sub_path = os.path.join(directory, "subdomains.csv")
@@ -215,7 +219,8 @@ class OutputManager:
             writer.writerow(["Hostname", "IPs", "Is_Live", "Source"])
             for s in self.results.subdomains:
                 writer.writerow([s.hostname, ";".join(s.ips), s.is_live, s.source])
-        print(f"{GREEN}[✓] Subdomains CSV written to:{RESET} {sub_path}")
+        if not self.quiet:
+            print(f"{GREEN}[✓] Subdomains CSV written to:{RESET} {sub_path}")
 
         # source_maps.csv
         sm_path = os.path.join(directory, "source_maps.csv")
@@ -224,4 +229,14 @@ class OutputManager:
             writer.writerow(["URL", "Referenced_JS", "Status", "Size", "Content_Type", "Detected_Via"])
             for sm in self.results.source_maps:
                 writer.writerow([sm.url, sm.referenced_js, sm.status or "", sm.size or "", sm.content_type or "", sm.detected_via])
-        print(f"{GREEN}[✓] Source Maps CSV written to:{RESET} {sm_path}")
+        if not self.quiet:
+            print(f"{GREEN}[✓] Source Maps CSV written to:{RESET} {sm_path}")
+
+        # urls.txt
+        urls_path = os.path.join(directory, "urls.txt")
+        all_urls = self.results.get_all_urls(resolve_relative=True)
+        with open(urls_path, "w", encoding="utf-8") as f:
+            for u in all_urls:
+                f.write(f"{u}\n")
+        if not self.quiet:
+            print(f"{GREEN}[✓] Discovered URLs list written to:{RESET} {urls_path}")

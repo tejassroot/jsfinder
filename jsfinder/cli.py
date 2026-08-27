@@ -188,6 +188,13 @@ Examples:
         action="store_true",
         help="Suppress banner and verbose progress messages",
     )
+    parser.add_argument(
+        "--urls-only",
+        "--only-urls",
+        action="store_true",
+        dest="urls_only",
+        help="Print only discovered URLs to stdout (one per line, ideal for piping)",
+    )
 
     return parser.parse_args(args)
 
@@ -221,7 +228,7 @@ async def async_main(args: argparse.Namespace) -> int:
         scope_mgr.load_from_file(args.scope)
 
     # 3. Print Banner & Scope Summary
-    if not args.quiet:
+    if not args.quiet and not args.urls_only:
         print_banner()
         print_scope_summary(target=target_url, scope_rules=scope_mgr.get_rules())
 
@@ -268,13 +275,17 @@ async def async_main(args: argparse.Namespace) -> int:
             max_pages=args.max_pages,
             download_sourcemaps=args.download_sourcemaps,
             output_dir=output_dir,
-            progress_callback=(lambda m: None) if args.quiet else None,
+            progress_callback=(lambda m: None) if (args.quiet or args.urls_only) else None,
         )
 
         results = await crawler.run()
 
     # 6. Terminal Reporting
-    if not args.quiet:
+    if args.urls_only:
+        all_urls = results.get_all_urls(resolve_relative=True)
+        for u in all_urls:
+            print(u)
+    elif not args.quiet:
         print_terminal_results(results)
 
     # 7. File Outputs
@@ -288,6 +299,7 @@ async def async_main(args: argparse.Namespace) -> int:
         json_file=json_path,
         csv_file=csv_path,
         output_dir=output_dir,
+        quiet=args.urls_only or args.quiet,
     )
     out_mgr.save_all()
 
@@ -297,7 +309,7 @@ async def async_main(args: argparse.Namespace) -> int:
 def main(args: list[str] | None = None) -> int:
     """CLI entrypoint."""
     parsed_args = parse_args(args)
-    setup_logging(verbose=parsed_args.verbose, quiet=parsed_args.quiet)
+    setup_logging(verbose=parsed_args.verbose, quiet=parsed_args.quiet or parsed_args.urls_only)
     try:
         return asyncio.run(async_main(parsed_args))
     except KeyboardInterrupt:

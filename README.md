@@ -178,7 +178,21 @@ Each domain directory contains:
 * `subdomains.csv` — Discovered and probed subdomains with IP addresses and status
 * `hosts.csv` — Probed live hosts with response status, page titles, and server headers
 * `source_maps.csv` — Discovered source maps and probe status codes
+* `urls.txt` — Clean deduplicated list of all discovered URLs (one per line, ready for piping)
 * `sourcemaps/` — Downloaded `.map` files (when `--download-sourcemaps` is enabled)
+
+#### Print Only Discovered URLs (`--urls-only`)
+
+Print only clean discovered URLs to stdout (one per line, ideal for piping into `httpx`, `nuclei`, `gf`, or `curl`):
+
+```bash
+jsfinder -u https://example.com --urls-only
+```
+
+Pipe directly into `httpx` or other reconnaissance tools:
+```bash
+jsfinder -u https://example.com --urls-only | httpx -status-code -title
+```
 
 #### Custom Output Directory
 
@@ -221,6 +235,7 @@ jsfinder -u https://example.com --download-sourcemaps
 | Flag | Argument | Description | Default |
 | :--- | :--- | :--- | :--- |
 | `-u, --url` | `URL` | Target URL or domain to scan (**Required**) | — |
+| `--urls-only` | — | Print only discovered URLs to stdout (ideal for piping) | `False` |
 | `--scope` | `FILE` | Path to scope file with domains, wildcards, or CIDRs | Default target scope |
 | `--subdomains` | — | Enable passive subdomain discovery (crt.sh, HTML/JS extraction) | `False` |
 | `--active-subdomains` | — | Enable active DNS subdomain enumeration | `False` |

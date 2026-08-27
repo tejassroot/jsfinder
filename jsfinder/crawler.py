@@ -219,6 +219,14 @@ class Crawler:
                         ):
                             self.visited_urls.add(norm_link)
                             self._register_host_subdomain(norm_link, "html_crawl")
+                            ep_key = (norm_link, current_url)
+                            if ep_key not in self.discovered_endpoints_map:
+                                self.discovered_endpoints_map[ep_key] = DiscoveredEndpoint(
+                                    endpoint=norm_link,
+                                    source=current_url,
+                                    endpoint_type="page",
+                                    parameters=[],
+                                )
                             await crawl_queue.put((norm_link, depth + 1))
 
         # 3. JavaScript Analysis

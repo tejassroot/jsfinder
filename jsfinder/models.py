@@ -100,3 +100,46 @@ class ScanResults:
             "endpoints": [e.to_dict() for e in self.endpoints],
             "parameters": self.parameters,
         }
+
+    def get_all_urls(self, resolve_relative: bool = True) -> List[str]:
+        """Return a deduplicated list of all discovered URLs."""
+        from urllib.parse import urljoin
+        urls: set[str] = set()
+
+        # 1. Target URL
+        if self.target:
+            urls.add(self.target)
+
+        # 2. Live probed hosts
+        for host in self.hosts:
+            if host.url:
+                urls.add(host.url)
+            if host.final_url:
+                urls.add(host.final_url)
+
+        # 3. JavaScript files
+        for js in self.javascript:
+            urls.add(js)
+
+        # 4. Resources
+        for res in self.resources:
+            if res.url:
+                urls.add(res.url)
+
+        # 5. Active source maps
+        for sm in self.source_maps:
+            if sm.status == 200:
+                urls.add(sm.url)
+
+        # 6. Discovered endpoints & routes
+        for ep in self.endpoints:
+            if not ep.endpoint:
+                continue
+            if ep.endpoint.startswith("http://") or ep.endpoint.startswith("https://") or ep.endpoint.startswith("//"):
+                urls.add(ep.endpoint)
+            elif resolve_relative and self.target:
+                urls.add(urljoin(self.target, ep.endpoint))
+            else:
+                urls.add(ep.endpoint)
+
+        return sorted(urls)
