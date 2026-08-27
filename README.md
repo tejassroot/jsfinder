@@ -210,9 +210,14 @@ If you only want terminal output without writing files to disk, pass `--no-save`
 jsfinder -u https://example.com --no-save
 ```
 
-#### Dedicated JSON or CSV Exports
+#### Dedicated JSON, CSV, or Text File Exports
 
 ```bash
+# Export clean discovered URLs to a plain text file
+jsfinder -u https://example.com --txt urls.txt
+# Or using -o with a .txt extension:
+jsfinder -u https://example.com -o urls.txt
+
 # Export single JSON file
 jsfinder -u https://example.com --json results.json
 
@@ -252,7 +257,8 @@ jsfinder -u https://example.com --download-sourcemaps
 | `--download-sourcemaps`| — | Save discovered source map files to output directory | `False` |
 | `--output-dir` | `DIR` | Save full multi-table reports and downloaded artifacts | `jsresult/<domain>` |
 | `--no-save` | — | Disable automatic saving of results to `jsresult/` | `False` |
-| `-o, --output` | `FILE` | Generic output file path | — |
+| `-o, --output` | `FILE` | Generic output file path (`.txt`, `.json`, or `.csv`) | — |
+| `--txt` | `FILE` | Save clean discovered URLs to plain text file (one per line) | — |
 | `--json` | `FILE` | Save structured findings to JSON file | — |
 | `--csv` | `FILE` | Save discovered endpoints to CSV file | — |
 | `-v, --verbose` | — | Enable detailed debug logging | `False` |
