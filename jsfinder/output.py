@@ -148,9 +148,11 @@ class OutputManager:
         # 1. Output directory export
         if self.output_dir:
             os.makedirs(self.output_dir, exist_ok=True)
+            print(f"\n{BOLD}[*] Saving scan artifacts to directory:{RESET} {self.output_dir}/")
             default_json_path = os.path.join(self.output_dir, "results.json")
             self.export_json(default_json_path)
             self.export_directory_csvs(self.output_dir)
+            print(f"{BOLD}{GREEN}[✓] All findings organized in:{RESET} {self.output_dir}/\n")
 
         # 2. Explicit JSON export
         if self.json_file and (not self.output_dir or os.path.abspath(self.json_file) != os.path.abspath(os.path.join(self.output_dir, "results.json"))):

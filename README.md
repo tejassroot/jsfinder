@@ -154,26 +154,53 @@ example.com
 
 > **Security Guarantee**: Domains such as `evil-example.com`, `example.com.attacker.com`, or external CDNs will be strictly blocked unless explicitly listed in your scope.
 
-### Exporting Results
+### Output Management & Automatic Saving
 
-#### JSON Export
+#### Automatic `jsresult/<domain>/` Directory (Default)
+
+By default, every scan automatically creates a structured output folder under `jsresult/<domain>/`. When you scan multiple domains, they are all neatly organized side-by-side inside the same `jsresult/` parent directory:
 
 ```bash
-python jsfinder.py -u https://example.com --json results.json
+jsfinder -u https://pescheck.io/
+# Automatically creates and saves to: jsresult/pescheck.io/
+
+jsfinder -u https://example.com/
+# Automatically creates and saves to: jsresult/example.com/
 ```
 
-#### CSV Export (Discovered Endpoints)
+Each domain directory contains:
+* `results.json` — Complete scan metadata, timestamps, and full discovery records
+* `endpoints.csv` — Discovered API & relative routes with source provenance and parameters
+* `resources.csv` — Static resources (scripts, stylesheets, images, HTML chunks)
+* `subdomains.csv` — Discovered and probed subdomains with IP addresses and status
+* `hosts.csv` — Probed live hosts with response status, page titles, and server headers
+* `source_maps.csv` — Discovered source maps and probe status codes
+* `sourcemaps/` — Downloaded `.map` files (when `--download-sourcemaps` is enabled)
+
+#### Custom Output Directory
+
+Override the default `jsresult/<domain>/` directory with a custom path:
 
 ```bash
-python jsfinder.py -u https://example.com --csv endpoints.csv
+jsfinder -u https://example.com --output-dir ./audit_results
 ```
 
-#### Multi-Artifact Directory Export
+#### Disable Automatic File Saving
 
-Generates `results.json`, `endpoints.csv`, `resources.csv`, `hosts.csv`, `subdomains.csv`, and `source_maps.csv`:
+If you only want terminal output without writing files to disk, pass `--no-save`:
 
 ```bash
-python jsfinder.py -u https://example.com --output-dir ./audit_results
+jsfinder -u https://example.com --no-save
+```
+
+#### Dedicated JSON or CSV Exports
+
+```bash
+# Export single JSON file
+jsfinder -u https://example.com --json results.json
+
+# Export single endpoints CSV file
+jsfinder -u https://example.com --csv endpoints.csv
 ```
 
 #### Downloading Discovered Source Maps
@@ -181,7 +208,7 @@ python jsfinder.py -u https://example.com --output-dir ./audit_results
 Safely download discovered `.js.map` files to disk under the output directory:
 
 ```bash
-python jsfinder.py -u https://example.com --output-dir ./audit_results --download-sourcemaps
+jsfinder -u https://example.com --download-sourcemaps
 ```
 
 ---
@@ -205,10 +232,11 @@ python jsfinder.py -u https://example.com --output-dir ./audit_results --downloa
 | `--max-depth` | `INT` | Maximum HTML crawl recursion depth | `2` |
 | `--max-pages` | `INT` | Maximum number of HTML pages to crawl | `50` |
 | `--download-sourcemaps`| — | Save discovered source map files to output directory | `False` |
+| `--output-dir` | `DIR` | Save full multi-table reports and downloaded artifacts | `jsresult/<domain>` |
+| `--no-save` | — | Disable automatic saving of results to `jsresult/` | `False` |
 | `-o, --output` | `FILE` | Generic output file path | — |
 | `--json` | `FILE` | Save structured findings to JSON file | — |
 | `--csv` | `FILE` | Save discovered endpoints to CSV file | — |
-| `--output-dir` | `DIR` | Save full multi-table reports and downloaded artifacts | — |
 | `-v, --verbose` | — | Enable detailed debug logging | `False` |
 | `-q, --quiet` | — | Suppress banner and progress logs | `False` |
 

@@ -6,6 +6,7 @@ import argparse
 import asyncio
 import logging
 import os
+import re
 import sys
 from urllib.parse import urlsplit
 
@@ -166,7 +167,12 @@ Examples:
     parser.add_argument(
         "--output-dir",
         metavar="DIR",
-        help="Directory to save full reports (results.json, endpoints.csv, resources.csv, etc.)",
+        help="Directory to save full reports (default: jsresult/<domain>)",
+    )
+    parser.add_argument(
+        "--no-save",
+        action="store_true",
+        help="Disable automatic saving of results to jsresult/ directory",
     )
 
     # Verbosity
@@ -243,6 +249,13 @@ async def async_main(args: argparse.Namespace) -> int:
         user_agent=args.user_agent,
         verify_ssl=not args.insecure,
     ) as http_client:
+        # Determine output directory (defaults to jsresult/<domain>)
+        output_dir = args.output_dir
+        if not output_dir and not args.no_save:
+            target_host = urlsplit(target_url).hostname or "target"
+            safe_domain = re.sub(r"[^a-zA-Z0-9.-]", "_", target_host).strip("._") or "target"
+            output_dir = os.path.join("jsresult", safe_domain)
+
         crawler = Crawler(
             target=target_url,
             scope_manager=scope_mgr,
@@ -254,7 +267,7 @@ async def async_main(args: argparse.Namespace) -> int:
             max_depth=args.max_depth,
             max_pages=args.max_pages,
             download_sourcemaps=args.download_sourcemaps,
-            output_dir=args.output_dir,
+            output_dir=output_dir,
             progress_callback=(lambda m: None) if args.quiet else None,
         )
 
@@ -274,7 +287,7 @@ async def async_main(args: argparse.Namespace) -> int:
         results=results,
         json_file=json_path,
         csv_file=csv_path,
-        output_dir=args.output_dir,
+        output_dir=output_dir,
     )
     out_mgr.save_all()
 
