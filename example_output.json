@@ -1,0 +1,187 @@
+{
+  "target": "https://example.com",
+  "scan_time": "2026-08-27T13:30:00Z",
+  "scope": [
+    "example.com",
+    "*.example.com"
+  ],
+  "subdomains": [
+    {
+      "hostname": "example.com",
+      "source": "target",
+      "ips": [
+        "93.184.216.34"
+      ],
+      "is_live": true
+    },
+    {
+      "hostname": "api.example.com",
+      "source": "crt.sh",
+      "ips": [
+        "93.184.216.35"
+      ],
+      "is_live": true
+    },
+    {
+      "hostname": "cdn.example.com",
+      "source": "html_crawl",
+      "ips": [
+        "93.184.216.36"
+      ],
+      "is_live": true
+    },
+    {
+      "hostname": "auth.example.com",
+      "source": "js_analysis",
+      "ips": [
+        "93.184.216.37"
+      ],
+      "is_live": true
+    }
+  ],
+  "hosts": [
+    {
+      "url": "https://example.com",
+      "status": 200,
+      "final_url": "https://example.com",
+      "content_type": "text/html",
+      "content_length": 1420,
+      "response_time": 0.124,
+      "server": "cloudflare",
+      "title": "Example Domain Portal"
+    },
+    {
+      "url": "https://api.example.com",
+      "status": 200,
+      "final_url": "https://api.example.com/health",
+      "content_type": "application/json",
+      "content_length": 68,
+      "response_time": 0.089,
+      "server": "nginx/1.24.0",
+      "title": null
+    }
+  ],
+  "javascript": [
+    "https://example.com/assets/app.8b4ef2.js",
+    "https://example.com/assets/chunk-vendors.a1c3d5.js",
+    "https://example.com/assets/runtime.7f9a12.js"
+  ],
+  "source_maps": [
+    {
+      "url": "https://example.com/assets/app.8b4ef2.js.map",
+      "referenced_js": "https://example.com/assets/app.8b4ef2.js",
+      "status": 200,
+      "content_type": "application/json",
+      "size": 245120,
+      "detected_via": "directive"
+    },
+    {
+      "url": "https://example.com/assets/chunk-vendors.a1c3d5.js.map",
+      "referenced_js": "https://example.com/assets/chunk-vendors.a1c3d5.js",
+      "status": 404,
+      "content_type": "text/html",
+      "size": 162,
+      "detected_via": "convention"
+    }
+  ],
+  "resources": [
+    {
+      "url": "https://example.com/assets/app.8b4ef2.js",
+      "resource_type": "javascript",
+      "source_url": "https://example.com",
+      "tag": "script",
+      "framework_chunk": true
+    },
+    {
+      "url": "https://example.com/assets/chunk-vendors.a1c3d5.js",
+      "resource_type": "javascript",
+      "source_url": "https://example.com",
+      "tag": "script",
+      "framework_chunk": true
+    },
+    {
+      "url": "https://example.com/css/main.css",
+      "resource_type": "css",
+      "source_url": "https://example.com",
+      "tag": "link",
+      "framework_chunk": false
+    },
+    {
+      "url": "https://example.com/images/logo.svg",
+      "resource_type": "image",
+      "source_url": "https://example.com",
+      "tag": "img",
+      "framework_chunk": false
+    },
+    {
+      "url": "https://example.com/config.json",
+      "resource_type": "json",
+      "source_url": "https://example.com",
+      "tag": "link",
+      "framework_chunk": false
+    }
+  ],
+  "endpoints": [
+    {
+      "endpoint": "/api/v1/users",
+      "source": "https://example.com/assets/app.8b4ef2.js",
+      "endpoint_type": "api",
+      "parameters": [
+        "page",
+        "limit",
+        "sort"
+      ]
+    },
+    {
+      "endpoint": "/api/auth/login",
+      "source": "https://example.com/assets/app.8b4ef2.js",
+      "endpoint_type": "api",
+      "parameters": [
+        "username",
+        "password"
+      ]
+    },
+    {
+      "endpoint": "/api/search?q=",
+      "source": "https://example.com/assets/app.8b4ef2.js",
+      "endpoint_type": "api",
+      "parameters": [
+        "q",
+        "type"
+      ]
+    },
+    {
+      "endpoint": "/graphql",
+      "source": "https://example.com/assets/app.8b4ef2.js",
+      "endpoint_type": "api",
+      "parameters": []
+    },
+    {
+      "endpoint": "https://api.example.com/v1/billing/checkout",
+      "source": "https://example.com/assets/chunk-vendors.a1c3d5.js",
+      "endpoint_type": "api",
+      "parameters": [
+        "sessionId"
+      ]
+    },
+    {
+      "endpoint": "/internal/metrics",
+      "source": "https://example.com/assets/runtime.7f9a12.js",
+      "endpoint_type": "api",
+      "parameters": [
+        "token"
+      ]
+    }
+  ],
+  "parameters": [
+    "limit",
+    "page",
+    "password",
+    "q",
+    "sessionId",
+    "sort",
+    "token",
+    "type",
+    "username"
+  ]
+}
