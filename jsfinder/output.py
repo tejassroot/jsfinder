@@ -210,15 +210,22 @@ class OutputManager:
         ep_path = os.path.join(directory, "endpoints.csv")
         self.export_endpoints_csv(ep_path)
 
-        # resources.csv
+        # resources.csv (only JavaScript URLs)
         res_path = os.path.join(directory, "resources.csv")
         with open(res_path, "w", encoding="utf-8", newline="") as f:
             writer = csv.writer(f)
-            writer.writerow(["URL", "Type", "Source_URL", "Tag", "Framework_Chunk"])
+            writer.writerow(["URL"])
+            seen_js: set[str] = set()
             for r in self.results.resources:
-                writer.writerow([r.url, r.resource_type, r.source_url, r.tag or "", r.framework_chunk])
+                if r.resource_type == "javascript" and r.url not in seen_js:
+                    seen_js.add(r.url)
+                    writer.writerow([r.url])
+            for j in self.results.javascript:
+                if j not in seen_js:
+                    seen_js.add(j)
+                    writer.writerow([j])
         if not self.quiet:
-            print(f"{GREEN}[✓] Resources CSV written to:{RESET} {res_path}")
+            print(f"{GREEN}[✓] Resources CSV (JavaScript URLs) written to:{RESET} {res_path}")
 
         # hosts.csv
         host_path = os.path.join(directory, "hosts.csv")

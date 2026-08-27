@@ -174,7 +174,7 @@ jsfinder -u https://example.com/
 Each domain directory contains:
 * `results.json` — Complete scan metadata, timestamps, and full discovery records
 * `endpoints.csv` — Discovered API & relative routes with source provenance and parameters
-* `resources.csv` — Static resources (scripts, stylesheets, images, HTML chunks)
+* `resources.csv` — Clean list of all discovered JavaScript (`.js`) file URLs
 * `subdomains.csv` — Discovered and probed subdomains with IP addresses and status
 * `hosts.csv` — Probed live hosts with response status, page titles, and server headers
 * `source_maps.csv` — Discovered source maps and probe status codes
