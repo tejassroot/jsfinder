@@ -165,6 +165,11 @@ Examples:
         help="Export discovered endpoints to CSV file",
     )
     parser.add_argument(
+        "--txt",
+        metavar="FILE",
+        help="Export discovered URLs to plain text file (one per line)",
+    )
+    parser.add_argument(
         "--output-dir",
         metavar="DIR",
         help="Directory to save full reports (default: jsresult/<domain>)",
@@ -289,15 +294,17 @@ async def async_main(args: argparse.Namespace) -> int:
         print_terminal_results(results)
 
     # 7. File Outputs
+    txt_path = args.txt or (args.output if args.output and args.output.endswith(".txt") else None)
     json_path = args.json or (args.output if args.output and args.output.endswith(".json") else None)
     csv_path = args.csv or (args.output if args.output and args.output.endswith(".csv") else None)
-    if args.output and not json_path and not csv_path:
+    if args.output and not json_path and not csv_path and not txt_path:
         json_path = args.output
 
     out_mgr = OutputManager(
         results=results,
         json_file=json_path,
         csv_file=csv_path,
+        txt_file=txt_path,
         output_dir=output_dir,
         quiet=args.urls_only or args.quiet,
     )

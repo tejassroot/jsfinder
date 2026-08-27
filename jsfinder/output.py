@@ -128,20 +128,22 @@ class OutputManager:
         results: ScanResults,
         json_file: Optional[str] = None,
         csv_file: Optional[str] = None,
+        txt_file: Optional[str] = None,
         output_dir: Optional[str] = None,
         quiet: bool = False,
     ):
         self.results = results
         self.json_file = json_file
         self.csv_file = csv_file
+        self.txt_file = txt_file
         self.output_dir = output_dir
         self.quiet = quiet
 
     def save_all(self) -> None:
         """Save results according to configured options."""
-        if not self.output_dir and not self.json_file and not self.csv_file:
+        if not self.output_dir and not self.json_file and not self.csv_file and not self.txt_file:
             if not self.quiet:
-                print(f"{DIM}[*] Tip: No output file specified. To save findings, pass --output-dir ./results, -o results.json, or --csv endpoints.csv{RESET}\n")
+                print(f"{DIM}[*] Tip: No output file specified. To save findings, pass -o urls.txt, --txt urls.txt, or --output-dir ./results{RESET}\n")
             return
         # 1. Output directory export
         if self.output_dir:
@@ -167,6 +169,22 @@ class OutputManager:
             if parent:
                 os.makedirs(parent, exist_ok=True)
             self.export_endpoints_csv(self.csv_file)
+
+        # 4. Explicit TXT export
+        if self.txt_file:
+            parent = os.path.dirname(self.txt_file)
+            if parent:
+                os.makedirs(parent, exist_ok=True)
+            self.export_txt(self.txt_file)
+
+    def export_txt(self, path: str) -> None:
+        """Export clean discovered URLs to a plain text file (one URL per line)."""
+        all_urls = self.results.get_all_urls(resolve_relative=True)
+        with open(path, "w", encoding="utf-8") as f:
+            for u in all_urls:
+                f.write(f"{u}\n")
+        if not self.quiet:
+            print(f"{GREEN}[✓] URLs text file written to:{RESET} {path}")
 
     def export_json(self, path: str) -> None:
         """Export full scan results to JSON."""
